@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yakıt Tüketimi Hesaplayıcı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h3 {
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fuel-prices {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .fuel-prices h3 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .price-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .price-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .fuel-type {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .price {
+            display: block;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .force-update-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .force-update-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .update-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .update-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .update-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .update-form h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .form-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .save-btn,
+        .cancel-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .cancel-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .city-selector {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .city-selector h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .selector-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛽</h1>
+            <h1>Yakıt Tüketimi Hesaplayıcı</h1>
+            <p>Arabanızın yakıt maliyetini hesaplayın</p>
+        </div>
+
+        <div class="city-selector">
+            <h3>🏙️ Şehir Seçin</h3>
+            <div class="form-group">
+                <label for="citySelect">Şehir:</label>
+                <select id="citySelect" name="citySelect" required onchange="loadCityPrices()">
+                    <option value="">Şehir seçin</option>
+                    {% if cities %}
+                    {% for city in cities %}
+                    <option value="{{ city }}" {% if city=='ISTANBUL' %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+
+        <div class="fuel-prices" id="fuelPrices">
+            <h3>📈 <span id="cityName">İSTANBUL</span> Yakıt Fiyatları </h3>
+            <div class="price-grid">
+                <div class="price-item">
+                    <span class="fuel-type">Benzin</span>
+                    <span class="price" id="benzinPrice">{{ prices.benzin if prices else 'Fiyat yok' }}{% if prices %}
+                        TL{% endif %}</span>
+                </div>
+                <div class="price-item">
+                    <span class="fuel-type">Dizel</span>
+                    <span class="price" id="dizelPrice">{{ prices.dizel if prices else 'Fiyat yok' }}{% if prices %}
+                        TL{% endif %}</span>
+                </div>
+                <div class="price-item">
+                    <span class="fuel-type">LPG</span>
+                    <span class="price" id="lpgPrice">{{ prices.LPG if prices else 'Fiyat yok' }}{% if prices %} TL{%
+                        endif %}</span>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <form id="fuelForm">
+            <div class="form-group">
+                <label for="consumption">100 km'de tüketilen yakıt (Litre):</label>
+                <input type="number" id="consumption" name="consumption" step="0.1" min="0" required
+                    placeholder="Örnek: 7.5">
+            </div>
+
+            <div class="form-group">
+                <label for="distance">Gideceğiniz toplam mesafe (km):</label>
+                <input type="number" id="distance" name="distance" step="0.1" min="0" required placeholder="Örnek: 250">
+            </div>
+
+            <div class="form-group">
+                <label for="fuelType">Yakıt Tipi:</label>
+                <select id="fuelType" name="fuelType" required>
+                    <option value="">Yakıt tipini seçin</option>
+                    <option value="benzin">Benzin</option>
+                    <option value="dizel">Dizel</option>
+                    <option value="LPG">LPG</option>
+                </select>
+            </div>
+
+            <button type="submit" class="calculate-btn">💰 Maliyeti Hesapla</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Hesaplanıyor...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h3>📊 Hesaplama Sonuçları</h3>
+            <div class="result-item">
+                <span>Toplam Mesafe:</span>
+                <span id="totalDistance">-</span>
+            </div>
+            <div class="result-item">
+                <span>Tüketilen Yakıt:</span>
+                <span id="fuelConsumed">-</span>
+            </div>
+            <div class="result-item">
+                <span>Yakıt Fiyatı:</span>
+                <span id="fuelPrice">-</span>
+            </div>
+            <div class="result-item">
+                <span>Toplam Maliyet:</span>
+                <span id="totalCost">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde İSTANBUL fiyatlarını yükle
+        window.addEventListener('load', function () {
+            loadCityPrices();
+        });
+
+        // Şehir seçildiğinde fiyatları yükle
+        async function loadCityPrices() {
+            const citySelect = document.getElementById('citySelect');
+            const city = citySelect.value;
+
+            if (!city) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/fuel-prices?city=${city}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('cityName').textContent = city;
+                    document.getElementById('benzinPrice').textContent = `${data.prices.benzin} TL`;
+                    document.getElementById('dizelPrice').textContent = `${data.prices.dizel} TL`;
+                    document.getElementById('lpgPrice').textContent = `${data.prices.LPG} TL`;
+                } else {
+                    document.getElementById('benzinPrice').textContent = 'Fiyat yok';
+                    document.getElementById('dizelPrice').textContent = 'Fiyat yok';
+                    document.getElementById('lpgPrice').textContent = 'Fiyat yok';
+                    alert('API\'den fiyat alınamadı: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Şehir fiyatları yüklenemedi:', error);
+                document.getElementById('benzinPrice').textContent = 'Fiyat yok';
+                document.getElementById('dizelPrice').textContent = 'Fiyat yok';
+                document.getElementById('lpgPrice').textContent = 'Fiyat yok';
+                alert('Fiyatlar yüklenirken hata oluştu!');
+            }
+        }
+
+        // Form gönderimi
+        document.getElementById('fuelForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Form verilerini al
+            const consumption = parseFloat(document.getElementById('consumption').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            const fuelType = document.getElementById('fuelType').value;
+            const city = document.getElementById('citySelect').value; // Üstteki şehir seçiciden al
+
+            // Loading göster
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('error').style.display = 'none';
+
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        consumption: consumption,
+                        distance: distance,
+                        fuel_type: fuelType,
+                        city: city
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Sonuçları göster
+                    document.getElementById('totalDistance').textContent = `${data.distance} km`;
+                    document.getElementById('fuelConsumed').textContent = `${data.total_fuel} litre`;
+                    document.getElementById('fuelPrice').textContent = `${data.fuel_price} TL/Litre`;
+                    document.getElementById('totalCost').textContent = `${data.total_cost} TL`;
+
+                    document.getElementById('result').classList.add('show');
+                } else {
+                    // Hata göster
+                    document.getElementById('error').textContent = data.error || 'Bir hata oluştu';
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('error').textContent = 'Bağlantı hatası oluştu';
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+
+</html>
