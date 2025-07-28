@@ -7,8 +7,6 @@ import urllib.parse
 app = Flask(__name__)
 
 def get_cities_from_api():
-    """API'den şehir listesini çek"""
-    # API'den gelen şehir listesi (manuel olarak eklendi)
     cities = [
         "ADANA", "ADIYAMAN", "AFYON", "AGRI", "AKSARAY", "AMASYA", "ANKARA", 
         "ANTALYA", "AYDIN", "BALIKESIR", "BARTIN", "BATMAN", "BILECIK", "BOLU", 
@@ -25,15 +23,12 @@ def get_cities_from_api():
     return cities
 
 def get_fuel_prices_from_api(city="ISTANBUL"):
-    """test.py dosyasındaki API'den yakıt fiyatlarını çek"""
     try:
-        # Türkçe karakterleri URL encode et
         encoded_city = urllib.parse.quote(city)
         api_url = f"http://hasanadiguzel.com.tr/api/akaryakit/sehir={encoded_city}"
         result = urllib.request.urlopen(api_url).read().decode('utf-8')
         data = json.loads(result)
-        
-        # API'den gelen veriyi işle
+
         if "data" in data and data["data"]:
             # En son veriyi al (en güncel)
             data_keys = list(data["data"].keys())
@@ -46,7 +41,6 @@ def get_fuel_prices_from_api(city="ISTANBUL"):
                 dizel_price = latest_data.get("Motorin(Eurodiesel)_TL/lt", "")
                 lpg_price = latest_data.get("Fuel_Oil_TL/Kg", "")  
                 
-                # Sadece geçerli fiyatlar varsa döndür
                 if benzin_price and dizel_price and lpg_price and lpg_price != '':
                     # Virgülü noktaya çevir ve float'a dönüştür
                     prices = {
@@ -56,7 +50,6 @@ def get_fuel_prices_from_api(city="ISTANBUL"):
                     }
                     return prices
                 else:
-                    # Eksik fiyat varsa None döndür
                     return None
             else:
                 return None
@@ -136,9 +129,8 @@ def calculate():
                 'error': f'{city} için API\'den fiyat alınamadı. Lütfen daha sonra tekrar deneyin.'
             })
         
-        # LPG için özel kontrol
         if fuel_type.lower() == 'lpg':
-            fuel_price = fuel_prices.get('LPG', 0)  # Büyük harf LPG
+            fuel_price = fuel_prices.get('LPG', 0)  
         else:
             fuel_price = fuel_prices.get(fuel_type.lower(), 0)
         print(f"Found Fuel Price: {fuel_price}")
@@ -149,7 +141,6 @@ def calculate():
                 'error': f'{city} için {fuel_type} fiyatı bulunamadı'
             })
         
-        # Hesaplama
         total_fuel_needed = (consumption * distance) / 100  # Litre
         total_cost = total_fuel_needed * fuel_price         # TL
         
