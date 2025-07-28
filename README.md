@@ -160,7 +160,7 @@ All 81 provinces of Turkiye are supported:
 ### Fuel Types
 - **Gasoline**: City-based prices
 - **Diesel**: Motor oil prices
-- **LPG**: Fuel Oil prices (from API)
+- **LPG**: Fuel Gas prices 
 
 ### User Interface
 - Modern and responsive design
